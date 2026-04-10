@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "_id": "mncbdu45zi3993q4",
+      "name": "Atharva",
+      "email": "atharvanacahne2107@gmail.com",
+      "password": "$2b$10$NSirZHerX/hDhiBH4qjKOumFscBmrIEOYk.NgVuA.UOKxBI4j09MS",
+      "role": "student"
+    },
+    {
+      "_id": "mncpy1a2q1vrv3r5",
+      "name": "admin",
+      "email": "aftmonkey@gmail.com",
+      "password": "$2b$10$huRuobp0xiMqcpB/Yq6jIuiZNwY3NkER8gua6Uxx1O77TPRclDGtq",
+      "role": "admin"
+    }
+  ],
+  "outpasses": [
+    {
+      "_id": "mncpxdle3mgx0gez",
+      "userId": "mncbdu45zi3993q4",
+      "destination": "home",
+      "reason": "medical",
+      "fromDate": "2026-07-21",
+      "toDate": "2026-07-23",
+      "status": "approved",
+      "createdAt": "2026-03-30T04:59:05.618Z",
+      "updatedAt": "2026-03-30T04:59:42.122Z"
+    }
+  ]
+}
