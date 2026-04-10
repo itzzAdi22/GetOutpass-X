@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { readDB } = require('../utils/jsonDB');
+const User = require('../models/usermodule');
 
 const protect = async (req, res, next) => {
   let token;
@@ -15,11 +15,9 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Add user to request (excluding password)
-      const db = readDB();
-      const user = db.users.find(u => u._id === decoded.id);
+      const user = await User.findById(decoded.id).select('-password');
       if (user) {
-        const { password, ...userWithoutPassword } = user;
-        req.user = userWithoutPassword;
+        req.user = user;
       } else {
         throw new Error('User not found');
       }

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { readDB, writeDB, generateId } = require('../utils/jsonDB');
+const User = require('../models/usermodule');
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -16,8 +16,7 @@ const registerUser = async (req, res, next) => {
   const { name, email, password, role } = req.body;
 
   try {
-    const db = readDB();
-    const userExists = db.users.find(u => u.email === email);
+    const userExists = await User.findOne({ email });
 
     if (userExists) {
       res.status(400);
@@ -28,16 +27,12 @@ const registerUser = async (req, res, next) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = {
-      _id: generateId(),
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
       role: role || 'student',
-    };
-
-    db.users.push(newUser);
-    writeDB(db);
+    });
 
     res.status(201).json({
       _id: newUser._id,
@@ -58,8 +53,7 @@ const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
-    const db = readDB();
-    const user = db.users.find(u => u.email === email);
+    const user = await User.findOne({ email });
 
     if (user && (await bcrypt.compare(password, user.password))) {
       res.json({

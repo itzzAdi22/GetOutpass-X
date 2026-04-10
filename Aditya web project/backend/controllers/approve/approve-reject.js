@@ -1,3 +1,5 @@
+const Outpass = require("../../models/outpassmodal");
+
 exports.updateStatus = async (req, res) => {
     const outpass = await Outpass.findById(req.params.id);
 

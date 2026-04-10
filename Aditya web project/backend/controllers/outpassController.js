@@ -1,4 +1,5 @@
-const { readDB, writeDB, generateId } = require('../utils/jsonDB');
+const Outpass = require('../models/outpassmodal');
+const User = require('../models/usermodule');
 
 // @desc    Create a new outpass request
 // @route   POST /api/outpass
@@ -7,23 +8,17 @@ const createOutpass = async (req, res, next) => {
   const { destination, reason, fromDate, toDate } = req.body;
 
   try {
-    const db = readDB();
-    const newOutpass = {
-      _id: generateId(),
+    const newOutpass = await Outpass.create({
       userId: req.user._id,
       destination,
       reason,
       fromDate,
       toDate,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    });
 
-    db.outpasses.push(newOutpass);
-    writeDB(db);
-
-    res.status(201).json(newOutpass);
+    const populatedOutpass = await Outpass.findById(newOutpass._id).populate('userId', 'name email');
+    
+    res.status(201).json(populatedOutpass);
   } catch (error) {
     next(error);
   }
@@ -34,27 +29,12 @@ const createOutpass = async (req, res, next) => {
 // @access  Private
 const getOutpasses = async (req, res, next) => {
   try {
-    const db = readDB();
     let outpasses = [];
 
     if (req.user.role === 'admin') {
-      outpasses = db.outpasses.map(op => {
-        const user = db.users.find(u => u._id === op.userId);
-        return {
-          ...op,
-          userId: user ? { _id: user._id, name: user.name, email: user.email } : null
-        };
-      });
+      outpasses = await Outpass.find().populate('userId', 'name email').sort({ createdAt: -1 });
     } else {
-      outpasses = db.outpasses
-        .filter(op => op.userId === req.user._id)
-        .map(op => {
-          const user = db.users.find(u => u._id === op.userId);
-          return {
-             ...op,
-             userId: user ? { _id: user._id, name: user.name, email: user.email } : null
-          };
-        });
+      outpasses = await Outpass.find({ userId: req.user._id }).populate('userId', 'name email').sort({ createdAt: -1 });
     }
 
     res.json(outpasses);
@@ -70,14 +50,14 @@ const updateOutpassStatus = async (req, res, next) => {
   const { status } = req.body;
 
   try {
-    const db = readDB();
-    const outpassIndex = db.outpasses.findIndex(op => op._id === req.params.id);
+    const outpass = await Outpass.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    ).populate('userId', 'name email');
 
-    if (outpassIndex !== -1) {
-      db.outpasses[outpassIndex].status = status || db.outpasses[outpassIndex].status;
-      db.outpasses[outpassIndex].updatedAt = new Date().toISOString();
-      writeDB(db);
-      res.json(db.outpasses[outpassIndex]);
+    if (outpass) {
+      res.json(outpass);
     } else {
       res.status(404);
       return next(new Error('Outpass not found'));
