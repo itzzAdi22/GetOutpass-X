@@ -1,0 +1,6 @@
+{
+  "name": "getpass-backend-functions",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "[[route]].js"
+}
